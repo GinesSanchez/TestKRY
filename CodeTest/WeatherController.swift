@@ -53,7 +53,7 @@ extension WeatherController {
     }
 }
 
-private struct LocationsResult: Decodable {
+private struct LocationsResult: Codable {
     var locations: [WeatherLocation]
 }
 

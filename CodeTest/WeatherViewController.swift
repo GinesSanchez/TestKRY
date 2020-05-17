@@ -20,13 +20,12 @@ class WeatherViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         controller.bind(view: self)
-        setup()
+        setUp()
     }
 
-    private func setup() {
-        title = "Weather Code Test"
-        tableView.tableFooterView = UIView()
-        tableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        controller.refresh()
     }
 }
 
@@ -58,5 +57,32 @@ extension WeatherViewController {
         cell.setup(entry)
 
         return cell
+    }
+}
+
+// MARK: - Set up
+private extension WeatherViewController {
+    func setUp() {
+        setUpTableView()
+        setUpNavigationBar()
+    }
+
+    func setUpTableView() {
+        tableView.tableFooterView = UIView()
+        tableView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+    }
+
+    func setUpNavigationBar() {
+        title = "Weather Code Test"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
+    }
+}
+
+// MARK: - IBActions
+private extension WeatherViewController {
+    @objc func addTapped() {
+        let addLocationController = AddLocationController()
+        let addLocationVC = AddLocationViewController.create(controller: addLocationController)
+        self.navigationController?.pushViewController(addLocationVC, animated: true)
     }
 }

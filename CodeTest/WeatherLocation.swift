@@ -4,7 +4,7 @@
 
 import UIKit
 
-struct WeatherLocation: Decodable {
+struct WeatherLocation: Codable {
     enum Status: String, Codable, CaseIterable {
         case cloudy = "CLOUDY"
         case sunny = "SUNNY"
@@ -17,8 +17,35 @@ struct WeatherLocation: Decodable {
         case snowCloud = "SNOW_CLOUD"
         case rainy = "RAINY"
     }
-    let id: String
+    let id: String?
     let name: String
     let status: Status
     let temperature: Int
+}
+
+extension WeatherLocation.Status {
+    var translatedStatus: String {
+        switch self {
+        case .cloudy:
+            return "Cloudy"
+        case .sunny:
+            return "Sunny"
+        case .mostlySunny:
+            return "Mostly Sunny"
+        case .partlySunnyRain:
+            return "Partly Sunny and Rainy"
+        case .thunderCloudAndRain:
+            return "Thunder, Cloudy and Rainy"
+        case .tornado:
+            return "Tornado"
+        case .barelySunny:
+            return "Barely Sunny"
+        case .lightening:
+            return "Lightening"
+        case .snowCloud:
+            return "Snowy and Cloudy"
+        case .rainy:
+            return "Rainy"
+        }
+    }
 }
