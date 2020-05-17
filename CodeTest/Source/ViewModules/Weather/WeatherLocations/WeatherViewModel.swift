@@ -6,32 +6,32 @@ import Foundation
 
 private let entriesKey = "entries"
 
-protocol WeatherView {
+protocol WeatherViewModelDelegate {
     func showEntries()
     func displayError()
 }
 
-class WeatherController {
-    var view: WeatherView?
+final class WeatherViewModel {
+    var viewController: WeatherViewModelDelegate?
 
     public private(set) var entries: [WeatherLocation] = []
 
     init() {}
 
-    internal func bind(view: WeatherView) {
-        self.view = view
+    internal func bind(viewController: WeatherViewModelDelegate) {
+        self.viewController = viewController
         refresh()
     }
 }
 
-extension WeatherController {
+extension WeatherViewModel {
     func refresh() {
         var urlRequest = URLRequest(url: URL(string: "https://app-code-test.kry.pet/locations")!)
         urlRequest.addValue(apiKey, forHTTPHeaderField: "X-Api-Key")
         URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
                 let defaults = UserDefaults.standard
                 guard let data = data else {
-                    self?.view?.displayError()
+                    self?.viewController?.displayError()
                     guard let userDefaultsData = defaults.object(forKey: entriesKey) as? Data else {
                         return
                     }
@@ -45,7 +45,7 @@ extension WeatherController {
 
     func removeLocation(index: Int) {
         guard let locationId = entries[index].id else {
-            view?.displayError()
+            viewController?.displayError()
             return
         }
 
@@ -55,7 +55,7 @@ extension WeatherController {
 
         URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
                 if error != nil {
-                    self?.view?.displayError()
+                    self?.viewController?.displayError()
                     return
                 }
                 self?.refresh()
@@ -77,14 +77,14 @@ private struct LocationsResult: Codable {
     var locations: [WeatherLocation]
 }
 
-private extension WeatherController {
+private extension WeatherViewModel {
     func decodeAndDisplay(data: Data) {
         do {
             let result = try JSONDecoder().decode(LocationsResult.self, from: data)
             self.entries = result.locations
-            self.view?.showEntries()
+            self.viewController?.showEntries()
         } catch {
-            self.view?.displayError()
+            self.viewController?.displayError()
         }
     }
 }

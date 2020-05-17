@@ -1,5 +1,5 @@
 //
-//  AddLocationController.swift
+//  AddLocationViewModel.swift
 //  CodeTest
 //
 //  Created by Gines Sanchez Merono on 2020-05-17.
@@ -8,18 +8,18 @@
 
 import Foundation
 
-protocol AddLocationView {
+protocol AddLocationViewModelDelegate: class {
     func displayError()
     func goBack()
 }
 
-final class AddLocationController {
-    private var view: AddLocationView?
+final class AddLocationViewModel {
+    private weak var viewController: AddLocationViewModelDelegate?
 
     init() {}
 
-    internal func bind(view: AddLocationView) {
-        self.view = view
+    internal func bind(viewController: AddLocationViewModelDelegate) {
+        self.viewController = viewController
     }
 
     internal func addLocationWith(cityName: String?, temperature: String?, status: WeatherLocation.Status?) {
@@ -37,14 +37,14 @@ final class AddLocationController {
         
         URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
                 guard let data = data else {
-                    self?.view?.displayError()
+                    self?.viewController?.displayError()
                     return
                 }
                 do {
                     _ = try JSONDecoder().decode(WeatherLocation.self, from: data)
-                    self?.view?.goBack()
+                    self?.viewController?.goBack()
                 } catch {
-                    self?.view?.displayError()
+                    self?.viewController?.displayError()
                 }
         }.resume()
     }

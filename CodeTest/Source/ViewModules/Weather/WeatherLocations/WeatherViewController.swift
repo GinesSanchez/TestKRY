@@ -6,9 +6,9 @@ import UIKit
 
 class WeatherViewController: UITableViewController {
 
-    private var controller: WeatherController!
+    private var controller: WeatherViewModel!
 
-    static func create(controller: WeatherController) -> WeatherViewController {
+    static func create(controller: WeatherViewModel) -> WeatherViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
 
         let viewController = storyboard.instantiateInitialViewController() as! WeatherViewController
@@ -19,7 +19,7 @@ class WeatherViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        controller.bind(view: self)
+        controller.bind(viewController: self)
         setUp()
     }
 
@@ -29,7 +29,7 @@ class WeatherViewController: UITableViewController {
     }
 }
 
-extension WeatherViewController: WeatherView {
+extension WeatherViewController: WeatherViewModelDelegate {
     func showEntries() {
         DispatchQueue.main.async {
             self.tableView.reloadData()
@@ -87,7 +87,7 @@ private extension WeatherViewController {
 // MARK: - IBActions
 private extension WeatherViewController {
     @objc func addTapped() {
-        let addLocationController = AddLocationController()
+        let addLocationController = AddLocationViewModel()
         let addLocationVC = AddLocationViewController.create(controller: addLocationController)
         self.navigationController?.pushViewController(addLocationVC, animated: true)
     }

@@ -19,7 +19,7 @@ final class AddLocationViewController: UIViewController {
     @IBOutlet weak var statusText: UITextField!
     @IBOutlet weak var pickerView: UIPickerView!
 
-    private var controller: AddLocationController!
+    private var controller: AddLocationViewModel!
 
     private let statusArray =  [WeatherLocation.Status.cloudy,
                                 WeatherLocation.Status.sunny,
@@ -32,7 +32,7 @@ final class AddLocationViewController: UIViewController {
                                 WeatherLocation.Status.snowCloud,
                                 WeatherLocation.Status.rainy]
 
-    static func create(controller: AddLocationController) -> AddLocationViewController {
+    static func create(controller: AddLocationViewModel) -> AddLocationViewController {
         let viewController = AddLocationViewController.init(nibName: "AddLocationViewController", bundle: nil)
 
         viewController.controller = controller
@@ -41,12 +41,12 @@ final class AddLocationViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        controller.bind(view: self)
+        controller.bind(viewController: self)
         setUp()
     }
 }
 
-extension AddLocationViewController: AddLocationView {
+extension AddLocationViewController: AddLocationViewModelDelegate {
     func displayError() {
         DispatchQueue.main.async {
             let alertController = UIAlertController(title: "Error", message: "We couldn't add the new location. Please, try again", preferredStyle: .alert)
