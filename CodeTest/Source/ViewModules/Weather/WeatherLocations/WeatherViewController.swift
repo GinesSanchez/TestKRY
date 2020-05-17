@@ -87,7 +87,7 @@ private extension WeatherViewController {
 private extension WeatherViewController {
     @objc func addTapped() {
         let addLocationVC = AddLocationViewController.init(nibName: "AddLocationViewController", bundle: nil)
-        addLocationVC.viewModel = AddLocationViewModel()
+        addLocationVC.viewModel = AddLocationViewModel(weatherManager: WeatherManager(networkManager: NetworkManager()))
         self.navigationController?.pushViewController(addLocationVC, animated: true)
     }
 }

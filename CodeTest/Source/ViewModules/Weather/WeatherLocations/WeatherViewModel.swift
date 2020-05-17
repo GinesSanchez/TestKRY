@@ -4,8 +4,6 @@
 
 import Foundation
 
-private let entriesKey = "entries"
-
 protocol WeatherViewModelDelegate {
     func showEntries()
     func displayError()
@@ -14,6 +12,13 @@ protocol WeatherViewModelDelegate {
 final class WeatherViewModel {
     var viewController: WeatherViewModelDelegate?
     private var entries: [WeatherLocation] = []
+
+    private let weatherManager: WeatherManagerType
+
+    init(weatherManager: WeatherManagerType) {
+        self.weatherManager = weatherManager
+        return
+    }
 }
 
 extension WeatherViewModel: WeatherViewControllerDelegate {
@@ -24,40 +29,30 @@ extension WeatherViewModel: WeatherViewControllerDelegate {
     }
 
     func refresh() {
-        var urlRequest = URLRequest(url: URL(string: "https://app-code-test.kry.pet/locations")!)
-        urlRequest.addValue(apiKey, forHTTPHeaderField: "X-Api-Key")
-        URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
-                let defaults = UserDefaults.standard
-                guard let data = data else {
-                    self?.viewController?.displayError()
-                    guard let userDefaultsData = defaults.object(forKey: entriesKey) as? Data else {
-                        return
-                    }
-                    self?.decodeAndDisplay(data: userDefaultsData)
+        weatherManager.getWeatherLocations { [weak self] result in
+            switch result {
+            case .failure:
+                self?.viewController?.displayError()
+                guard let entries = self?.weatherManager.getWeatherLocationsCachedData() else {
                     return
                 }
-                defaults.set(data, forKey: entriesKey)
-                self?.decodeAndDisplay(data: data)
-        }.resume()
+                self?.entries = entries
+            case .success(let entries):
+                self?.entries = entries
+            }
+            self?.viewController?.showEntries()
+        }
     }
 
     func removeWeatherLocation(index: Int) {
-        guard let locationId = entries[index].id else {
-            viewController?.displayError()
-            return
-        }
-
-        var urlRequest = URLRequest(url: URL(string: "https://app-code-test.kry.pet/locations/\(locationId)")!)
-        urlRequest.httpMethod = "DELETE"
-        urlRequest.addValue(apiKey, forHTTPHeaderField: "X-Api-Key")
-
-        URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
-                if error != nil {
-                    self?.viewController?.displayError()
-                    return
-                }
+        weatherManager.delete(weatherLocation: entries[index]) { [weak self] (result) in
+            switch result {
+            case .failure:
+                self?.viewController?.displayError()
+            case .success:
                 self?.refresh()
-        }.resume()
+            }
+        }
     }
 
     var numberOfRowsInSection: Int {
@@ -66,33 +61,5 @@ extension WeatherViewModel: WeatherViewControllerDelegate {
 
     func weatherLocationFor(index: Int) -> WeatherLocation {
         return entries[index]
-    }
-}
-
-private struct LocationsResult: Codable {
-    var locations: [WeatherLocation]
-}
-
-private extension WeatherViewModel {
-    func decodeAndDisplay(data: Data) {
-        do {
-            let result = try JSONDecoder().decode(LocationsResult.self, from: data)
-            self.entries = result.locations
-            self.viewController?.showEntries()
-        } catch {
-            self.viewController?.displayError()
-        }
-    }
-}
-
-// MARK: - Computed Properties
-private extension WeatherViewModel {
-    private var apiKey: String {
-        guard let apiKey = UserDefaults.standard.string(forKey: "API_KEY") else {
-            let key = UUID().uuidString
-            UserDefaults.standard.set(key, forKey: "API_KEY")
-            return key
-        }
-        return apiKey
     }
 }

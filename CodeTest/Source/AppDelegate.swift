@@ -12,7 +12,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let viewController = storyboard.instantiateInitialViewController() as! WeatherViewController
-        viewController.viewModel = WeatherViewModel()
+        viewController.viewModel = WeatherViewModel(weatherManager: WeatherManager(networkManager: NetworkManager()))
 
         let navigationController = UINavigationController(rootViewController: viewController)
 
