@@ -32,13 +32,17 @@ class WeatherViewController: UITableViewController {
 
 extension WeatherViewController: WeatherView {
     func showEntries() {
-        tableView.reloadData()
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
 
     func displayError() {
-        let alertController = UIAlertController(title: "Error", message: "Something went wrong", preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        self.present(alertController, animated: true)
+        DispatchQueue.main.async {
+            let alertController = UIAlertController(title: "Error", message: "Something went wrong", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alertController, animated: true)
+        }
     }
 }
 
