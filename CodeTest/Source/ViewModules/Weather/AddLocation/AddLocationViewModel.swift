@@ -15,14 +15,15 @@ protocol AddLocationViewModelDelegate: class {
 
 final class AddLocationViewModel {
     private weak var viewController: AddLocationViewModelDelegate?
+}
 
-    init() {}
-
-    internal func bind(viewController: AddLocationViewModelDelegate) {
+// MARK: - AddLocationViewControllerDelegate
+extension AddLocationViewModel: AddLocationViewControllerDelegate {
+    func bind(viewController: AddLocationViewModelDelegate) {
         self.viewController = viewController
     }
 
-    internal func addLocationWith(cityName: String?, temperature: String?, status: WeatherLocation.Status?) {
+    func addLocationWith(cityName: String?, temperature: String?, status: WeatherLocation.Status?) {
         guard let cityName = cityName, let status = status, let temperature = temperature, let temperatureInt = Int(temperature) else {
             //TODO: Show pararameters missings
             return
@@ -34,7 +35,7 @@ final class AddLocationViewModel {
         urlRequest.httpMethod = "POST"
         urlRequest.httpBody = jsonData
         urlRequest.addValue(apiKey, forHTTPHeaderField: "X-Api-Key")
-        
+
         URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
                 guard let data = data else {
                     self?.viewController?.displayError()
@@ -48,7 +49,10 @@ final class AddLocationViewModel {
                 }
         }.resume()
     }
+}
 
+// MARK: - Computed Properties
+private extension AddLocationViewModel {
     private var apiKey: String {
         guard let apiKey = UserDefaults.standard.string(forKey: "API_KEY") else {
             let key = UUID().uuidString

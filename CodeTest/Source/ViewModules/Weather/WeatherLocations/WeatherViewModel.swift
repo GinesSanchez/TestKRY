@@ -13,18 +13,16 @@ protocol WeatherViewModelDelegate {
 
 final class WeatherViewModel {
     var viewController: WeatherViewModelDelegate?
+    private var entries: [WeatherLocation] = []
+}
 
-    public private(set) var entries: [WeatherLocation] = []
-
-    init() {}
-
-    internal func bind(viewController: WeatherViewModelDelegate) {
+extension WeatherViewModel: WeatherViewControllerDelegate {
+    
+    func bind(viewController: WeatherViewModelDelegate) {
         self.viewController = viewController
         refresh()
     }
-}
 
-extension WeatherViewModel {
     func refresh() {
         var urlRequest = URLRequest(url: URL(string: "https://app-code-test.kry.pet/locations")!)
         urlRequest.addValue(apiKey, forHTTPHeaderField: "X-Api-Key")
@@ -43,7 +41,7 @@ extension WeatherViewModel {
         }.resume()
     }
 
-    func removeLocation(index: Int) {
+    func removeWeatherLocation(index: Int) {
         guard let locationId = entries[index].id else {
             viewController?.displayError()
             return
@@ -62,14 +60,12 @@ extension WeatherViewModel {
         }.resume()
     }
 
+    var numberOfRowsInSection: Int {
+        return entries.count
+    }
 
-    var apiKey: String {
-        guard let apiKey = UserDefaults.standard.string(forKey: "API_KEY") else {
-            let key = UUID().uuidString
-            UserDefaults.standard.set(key, forKey: "API_KEY")
-            return key
-        }
-        return apiKey
+    func weatherLocationFor(index: Int) -> WeatherLocation {
+        return entries[index]
     }
 }
 
@@ -86,5 +82,17 @@ private extension WeatherViewModel {
         } catch {
             self.viewController?.displayError()
         }
+    }
+}
+
+// MARK: - Computed Properties
+private extension WeatherViewModel {
+    private var apiKey: String {
+        guard let apiKey = UserDefaults.standard.string(forKey: "API_KEY") else {
+            let key = UUID().uuidString
+            UserDefaults.standard.set(key, forKey: "API_KEY")
+            return key
+        }
+        return apiKey
     }
 }

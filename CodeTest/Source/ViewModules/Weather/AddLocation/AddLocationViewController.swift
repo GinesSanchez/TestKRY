@@ -8,6 +8,11 @@
 
 import UIKit
 
+protocol AddLocationViewControllerDelegate {
+    func bind(viewController: AddLocationViewModelDelegate)
+    func addLocationWith(cityName: String?, temperature: String?, status: WeatherLocation.Status?)
+}
+
 
 final class AddLocationViewController: UIViewController {
 
@@ -19,7 +24,7 @@ final class AddLocationViewController: UIViewController {
     @IBOutlet weak var statusText: UITextField!
     @IBOutlet weak var pickerView: UIPickerView!
 
-    private var controller: AddLocationViewModel!
+    var viewModel: AddLocationViewControllerDelegate?
 
     private let statusArray =  [WeatherLocation.Status.cloudy,
                                 WeatherLocation.Status.sunny,
@@ -32,16 +37,9 @@ final class AddLocationViewController: UIViewController {
                                 WeatherLocation.Status.snowCloud,
                                 WeatherLocation.Status.rainy]
 
-    static func create(controller: AddLocationViewModel) -> AddLocationViewController {
-        let viewController = AddLocationViewController.init(nibName: "AddLocationViewController", bundle: nil)
-
-        viewController.controller = controller
-        return viewController
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        controller.bind(viewController: self)
+        viewModel?.bind(viewController: self)
         setUp()
     }
 }
@@ -123,6 +121,6 @@ private extension AddLocationViewController {
         let status = statusArray.filter { (status) -> Bool in
             return status.translatedStatus == statusText.text
         }.first
-        controller.addLocationWith(cityName: cityNameText.text, temperature: temperatureText.text, status: status)
+        viewModel?.addLocationWith(cityName: cityNameText.text, temperature: temperatureText.text, status: status)
     }
 }

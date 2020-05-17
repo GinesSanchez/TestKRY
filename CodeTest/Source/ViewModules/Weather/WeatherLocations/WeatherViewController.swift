@@ -4,28 +4,29 @@
 
 import UIKit
 
-class WeatherViewController: UITableViewController {
+protocol WeatherViewControllerDelegate {
+    func bind(viewController: WeatherViewModelDelegate)
+    func refresh()
+    func removeWeatherLocation(index: Int)
 
-    private var controller: WeatherViewModel!
+    var numberOfRowsInSection: Int { get }
+    func weatherLocationFor(index: Int) -> WeatherLocation
 
-    static func create(controller: WeatherViewModel) -> WeatherViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+}
 
-        let viewController = storyboard.instantiateInitialViewController() as! WeatherViewController
+final class WeatherViewController: UITableViewController {
 
-        viewController.controller = controller
-        return viewController
-    }
+    var viewModel: WeatherViewControllerDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        controller.bind(viewController: self)
+        viewModel.bind(viewController: self)
         setUp()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        controller.refresh()
+        viewModel.refresh()
     }
 }
 
@@ -47,21 +48,19 @@ extension WeatherViewController: WeatherViewModelDelegate {
 
 extension WeatherViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return controller.entries.count
+        return viewModel.numberOfRowsInSection
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: LocationTableViewCell.reuseIdentifier, for: indexPath) as! LocationTableViewCell
-
-        let entry = controller.entries[indexPath.row]
-        cell.setup(entry)
+        cell.setup(viewModel.weatherLocationFor(index: indexPath.row))
 
         return cell
     }
 
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            controller.removeLocation(index: indexPath.row)
+            viewModel.removeWeatherLocation(index: indexPath.row)
         }
     }
 }
@@ -87,8 +86,8 @@ private extension WeatherViewController {
 // MARK: - IBActions
 private extension WeatherViewController {
     @objc func addTapped() {
-        let addLocationController = AddLocationViewModel()
-        let addLocationVC = AddLocationViewController.create(controller: addLocationController)
+        let addLocationVC = AddLocationViewController.init(nibName: "AddLocationViewController", bundle: nil)
+        addLocationVC.viewModel = AddLocationViewModel()
         self.navigationController?.pushViewController(addLocationVC, animated: true)
     }
 }
