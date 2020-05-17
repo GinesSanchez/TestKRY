@@ -43,6 +43,26 @@ extension WeatherController {
         }.resume()
     }
 
+    func removeLocation(index: Int) {
+        guard let locationId = entries[index].id else {
+            view?.displayError()
+            return
+        }
+
+        var urlRequest = URLRequest(url: URL(string: "https://app-code-test.kry.pet/locations/\(locationId)")!)
+        urlRequest.httpMethod = "DELETE"
+        urlRequest.addValue(apiKey, forHTTPHeaderField: "X-Api-Key")
+
+        URLSession(configuration: .default).dataTask(with: urlRequest) { [weak self] (data, response, error) in
+                if error != nil {
+                    self?.view?.displayError()
+                    return
+                }
+                self?.refresh()
+        }.resume()
+    }
+
+
     var apiKey: String {
         guard let apiKey = UserDefaults.standard.string(forKey: "API_KEY") else {
             let key = UUID().uuidString
